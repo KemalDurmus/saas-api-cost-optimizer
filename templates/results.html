@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}{{ app_title }} - Analiz Sonuçları{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <h1>Analiz Sonuçları</h1>
+        <p class="muted">Maliyet verilerinizin detaylı analizi aşağıdadır.</p>
+
+        <h2>Genel Bakış</h2>
+        <div class="stat">
+            <span class="stat-label">Toplam Maliyet:</span>
+            <span class="stat-value">{{ total_cost }} TL</span>
+        </div>
+
+        <h2>Servislere Göre Maliyet Dağılımı</h2>
+        {% if cost_by_service %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Servis</th>
+                    <th>Toplam Maliyet (TL)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cost_by_service %}
+                <tr>
+                    <td>{{ item['Servis'] }}</td>
+                    <td>{{ "%.2f"|format(item['Toplam Maliyet']) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Maliyet dağılımı verisi bulunamadı.</p>
+        {% endif %}
+
+        <h2>Anormallikler ve Uyarılar</h2>
+        {% if anomalies %}
+        <ul class="alert alert-warning">
+            {% for anomaly in anomalies %}
+            <li>{{ anomaly }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="alert alert-success">Herhangi bir belirgin anormallik tespit edilmedi.</p>
+        {% endif %}
+
+        <h2>Optimizasyon Önerileri</h2>
+        {% if suggestions %}
+        <ul>
+            {% for suggestion in suggestions %}
+            <li>{{ suggestion }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>Öneri bulunamadı.</p>
+        {% endif %}
+
+        {% if plot_url %}
+        <h2>Maliyet Dağılımı Grafiği</h2>
+        <div class="chart-container">
+            <img src="data:image/png;base64,{{ plot_url }}" alt="Maliyet Dağılımı Grafiği" style="max-width: 100%; height: auto;">
+        </div>
+        {% else %}
+        <p>Maliyet dağılımı grafiği oluşturulamadı (yeterli veri yok).</p>
+        {% endif %}
+
+        <div class="form-group" style="margin-top: 20px;">
+            <a href="{{ url_for('feature.index') }}" class="btn btn-secondary">Yeni Analiz Yap</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

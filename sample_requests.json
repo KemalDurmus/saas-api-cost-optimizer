@@ -1,0 +1,37 @@
+[
+  {
+    "method": "GET",
+    "path": "/",
+    "form_fields": []
+  },
+  {
+    "method": "POST",
+    "path": "/analyze",
+    "form_fields": [
+      {
+        "name": "sample_data",
+        "value": "true"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/analyze",
+    "form_fields": [
+      {
+        "name": "cost_data",
+        "value": "Servis,Tarih,Kullanım,Maliyet\nOpenAI,2023-12-01,100000,250.00\nZapier,2023-12-05,3000,30.00\nClerk,2023-12-10,800,50.00\nStripe,2023-12-12,5000,60.00\nOpenAI,2023-12-15,120000,300.00"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/analyze",
+    "form_fields": [
+      {
+        "name": "cost_data",
+        "value": "Servis,Tarih,Kullanım,Maliyet\nTestService,2024-01-01,10,10.00"
+      }
+    ]
+  }
+]

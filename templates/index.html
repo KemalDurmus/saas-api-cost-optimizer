@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{{ app_title }} - Giriş{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <h1>{{ app_title }}</h1>
+        <p class="muted">{{ tagline }}</p>
+
+        <p>Çeşitli SaaS ve API hizmetlerinizdeki harcamaları analiz etmek için maliyet verilerinizi aşağıdaki metin kutusuna yapıştırın. Verilerinizin CSV formatında ve 'Servis,Tarih,Kullanım,Maliyet' sütun başlıklarını içermesi gerekmektedir.</p>
+
+        <form method="POST" action="{{ url_for('feature.analyze') }}">
+            <div class="form-group">
+                <label for="cost_data">Maliyet Verilerini Yapıştırın (CSV formatında)</label>
+                <textarea id="cost_data" name="cost_data" rows="15" class="form-control" placeholder="Örnek:
+Servis,Tarih,Kullanım,Maliyet
+OpenAI,2023-10-01,150000,350.75
+Zapier,2023-10-05,5000,49.99
+Clerk,2023-10-10,1200,75.00
+Stripe,2023-10-12,10000,120.50
+..."></textarea>
+            </div>
+            <div class="form-group btn-group">
+                <button type="submit" class="btn">Analiz Et</button>
+                <button type="submit" name="sample_data" value="true" class="btn btn-secondary">Örnek Veriyle Dene</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
