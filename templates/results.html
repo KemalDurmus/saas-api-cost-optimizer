@@ -10,7 +10,7 @@
 
 <div class="grid">
   <div class="card"><div class="muted">Total in this file</div><div class="stat">{{ money(r.total) }}</div>
-    <div class="muted">{{ r.rows }} line(s), {{ r.services|length }} vendor(s)</div></div>
+    <div class="muted">{{ r.rows }} line{{ '' if r.rows == 1 else 's' }}, {{ r.services|length }} vendor{{ '' if r.services|length == 1 else 's' }}</div></div>
   {% if r.run_rate is not none %}
   <div class="card"><div class="muted">Latest month ({{ r.last_month }})</div><div class="stat">{{ money(r.run_rate) }}</div>
     <div class="muted">≈ {{ money(r.annualized) }} a year at this rate</div></div>

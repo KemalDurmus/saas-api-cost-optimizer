@@ -154,7 +154,8 @@ def parse_costs(text: str) -> tuple[list[dict], list[str]]:
     warnings = []
     if skipped:
         shown = ", ".join(map(str, skipped[:8])) + (" …" if len(skipped) > 8 else "")
-        warnings.append(f"{len(skipped)} line(s) skipped because the service or amount was empty/unreadable (lines {shown}).")
+        warnings.append(f"{len(skipped)} {'line' if len(skipped) == 1 else 'lines'} skipped because the service or "
+                        f"amount was empty/unreadable ({'line' if len(skipped) == 1 else 'lines'} {shown}).")
     if "date" in cols and not date_fmt:
         warnings.append("The date column couldn't be read in a single format, so month-over-month trends are off.")
     elif "date" not in cols:
@@ -270,7 +271,7 @@ def analyze(rows: list[dict]) -> dict:
             subs.append((svc, vals[-1]))
     if subs:
         monthly_fixed = sum(v for _, v in subs)
-        findings.append({"level": "low", "title": f"{len(subs)} fixed subscription(s): {{cur}}{monthly_fixed:,.2f}/month",
+        findings.append({"level": "low", "title": f"{len(subs)} fixed subscription{'' if len(subs) == 1 else 's'}: {{cur}}{monthly_fixed:,.2f}/month",
                          "detail": ", ".join(f"{s} ({{cur}}{v:,.2f})" for s, v in sorted(subs, key=lambda x: -x[1])) + ".",
                          "action": f"Review seat counts and unused tools — these add up to {{cur}}{monthly_fixed * 12:,.2f} a year.",
                          "saving": None})
