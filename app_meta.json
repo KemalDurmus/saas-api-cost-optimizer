@@ -1,4 +1,5 @@
 {
-  "app_title": "SaaS/API Maliyet Optimizasyonu",
-  "tagline": "Teknoloji harcamalarınızı izleyin, analiz edin ve optimize edin."
+  "app_title": "SaaS/API Cost Optimizer",
+  "tagline": "Find duplicate charges, spikes and creeping costs in your SaaS & API bills.",
+  "lang": "en"
 }

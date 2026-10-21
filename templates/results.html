@@ -1,75 +1,78 @@
 {% extends "base.html" %}
 
-{% block title %}{{ app_title }} - Analiz Sonuçları{% endblock %}
+{% block title %}{{ app_title }} — results{% endblock %}
+
+{% macro money(v) %}{{ cur }}{{ "{:,.2f}".format(v) }}{% endmacro %}
 
 {% block content %}
-<div class="container">
-    <div class="card">
-        <h1>Analiz Sonuçları</h1>
-        <p class="muted">Maliyet verilerinizin detaylı analizi aşağıdadır.</p>
+{% if sample %}<div class="alert alert-info">You're looking at sample data. Upload your own export to see your numbers.</div>{% endif %}
+{% for w in warnings %}<div class="alert alert-warning">{{ w }}</div>{% endfor %}
 
-        <h2>Genel Bakış</h2>
-        <div class="stat">
-            <span class="stat-label">Toplam Maliyet:</span>
-            <span class="stat-value">{{ total_cost }} TL</span>
-        </div>
-
-        <h2>Servislere Göre Maliyet Dağılımı</h2>
-        {% if cost_by_service %}
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Servis</th>
-                    <th>Toplam Maliyet (TL)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in cost_by_service %}
-                <tr>
-                    <td>{{ item['Servis'] }}</td>
-                    <td>{{ "%.2f"|format(item['Toplam Maliyet']) }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p>Maliyet dağılımı verisi bulunamadı.</p>
-        {% endif %}
-
-        <h2>Anormallikler ve Uyarılar</h2>
-        {% if anomalies %}
-        <ul class="alert alert-warning">
-            {% for anomaly in anomalies %}
-            <li>{{ anomaly }}</li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p class="alert alert-success">Herhangi bir belirgin anormallik tespit edilmedi.</p>
-        {% endif %}
-
-        <h2>Optimizasyon Önerileri</h2>
-        {% if suggestions %}
-        <ul>
-            {% for suggestion in suggestions %}
-            <li>{{ suggestion }}</li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p>Öneri bulunamadı.</p>
-        {% endif %}
-
-        {% if plot_url %}
-        <h2>Maliyet Dağılımı Grafiği</h2>
-        <div class="chart-container">
-            <img src="data:image/png;base64,{{ plot_url }}" alt="Maliyet Dağılımı Grafiği" style="max-width: 100%; height: auto;">
-        </div>
-        {% else %}
-        <p>Maliyet dağılımı grafiği oluşturulamadı (yeterli veri yok).</p>
-        {% endif %}
-
-        <div class="form-group" style="margin-top: 20px;">
-            <a href="{{ url_for('feature.index') }}" class="btn btn-secondary">Yeni Analiz Yap</a>
-        </div>
-    </div>
+<div class="grid">
+  <div class="card"><div class="muted">Total in this file</div><div class="stat">{{ money(r.total) }}</div>
+    <div class="muted">{{ r.rows }} line(s), {{ r.services|length }} vendor(s)</div></div>
+  {% if r.run_rate is not none %}
+  <div class="card"><div class="muted">Latest month ({{ r.last_month }})</div><div class="stat">{{ money(r.run_rate) }}</div>
+    <div class="muted">≈ {{ money(r.annualized) }} a year at this rate</div></div>
+  {% endif %}
+  <div class="card"><div class="muted">Findings</div><div class="stat">{{ r.findings|length }}</div>
+    <div class="muted">{% if r.exact_savings %}{{ money(r.exact_savings) }} in possible duplicate charges{% else %}see below{% endif %}</div></div>
 </div>
+
+<div class="card" style="margin-top:16px">
+  <h2>Findings</h2>
+  {% if r.findings %}
+    {% for f in r.findings %}
+    <div class="finding finding-{{ f.level }}">
+      <div><span class="badge">{{ {"high": "Act now", "medium": "Look into", "low": "Worth a check"}[f.level] }}</span>
+        <strong>{{ f.title|replace("{cur}", cur) }}</strong></div>
+      <div>{{ f.detail|replace("{cur}", cur) }}</div>
+      <div class="muted">→ {{ f.action|replace("{cur}", cur) }}</div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <p class="muted">Nothing unusual in this data: no duplicate charges, spikes or fast-growing vendors.</p>
+  {% endif %}
+</div>
+
+<div class="card" style="margin-top:16px">
+  <h2>Spend by vendor</h2>
+  <table>
+    <thead><tr><th>Vendor</th><th>Total</th><th>Share</th><th style="width:40%"></th></tr></thead>
+    <tbody>
+    {% for s in r.services %}
+      <tr><td>{{ s.service }}</td><td>{{ money(s.cost) }}</td><td>{{ "%.1f"|format(s.share) }}%</td>
+        <td><div class="bar"><span style="width: {{ "%.1f"|format(s.bar) }}%"></span></div></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if r.months|length > 1 %}
+<div class="card" style="margin-top:16px">
+  <h2>By month</h2>
+  <table>
+    <thead><tr><th>Month</th><th>Total</th><th style="width:55%"></th></tr></thead>
+    <tbody>
+    {% for m in r.months %}
+      <tr><td>{{ m.month }}</td><td>{{ money(m.cost) }}</td>
+        <td><div class="bar"><span style="width: {{ "%.1f"|format(m.bar) }}%"></span></div></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p class="muted">If the latest month isn't over yet, its total (and growth) will look smaller than it ends up.</p>
+</div>
+{% endif %}
+
+<p style="margin-top:16px"><a class="btn btn-secondary" href="{{ url_for('feature.index') }}">Analyze another file</a></p>
+
+<style>
+  .finding { padding: 12px 0; border-bottom: 1px solid var(--border); display: grid; gap: 4px; }
+  .finding:last-child { border-bottom: 0; }
+  .finding-high .badge { background: var(--error); color: #fff; }
+  .finding-medium .badge { background: var(--warning); color: #111; }
+  td:not(:last-child) { white-space: nowrap; }
+  .bar { background: var(--border); border-radius: 6px; height: 10px; overflow: hidden; }
+  .bar span { display: block; height: 100%; background: var(--primary); }
+</style>
 {% endblock %}

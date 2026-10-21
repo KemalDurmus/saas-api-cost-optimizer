@@ -10,7 +10,11 @@
     "form_fields": [
       {
         "name": "sample_data",
-        "value": "true"
+        "value": "1"
+      },
+      {
+        "name": "currency",
+        "value": "USD"
       }
     ]
   },
@@ -20,7 +24,11 @@
     "form_fields": [
       {
         "name": "cost_data",
-        "value": "Servis,Tarih,Kullanım,Maliyet\nOpenAI,2023-12-01,100000,250.00\nZapier,2023-12-05,3000,30.00\nClerk,2023-12-10,800,50.00\nStripe,2023-12-12,5000,60.00\nOpenAI,2023-12-15,120000,300.00"
+        "value": "Vendor,Date,Amount\nOpenAI,2025-08-28,$410.00\nOpenAI,2025-09-28,\"$1,250.00\"\nSlack,2025-08-03,210\nSlack,2025-09-03,210"
+      },
+      {
+        "name": "currency",
+        "value": "USD"
       }
     ]
   },
@@ -30,7 +38,11 @@
     "form_fields": [
       {
         "name": "cost_data",
-        "value": "Servis,Tarih,Kullanım,Maliyet\nTestService,2024-01-01,10,10.00"
+        "value": "Servis;Tarih;Kullanım;Maliyet\nOpenAI;01.08.2025;1000;50,75\nOpenAI;01.09.2025;1200;1.250,50"
+      },
+      {
+        "name": "currency",
+        "value": "TRY"
       }
     ]
   }

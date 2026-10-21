@@ -1,37 +1,42 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+
 import logic
 
 bp = Blueprint("feature", __name__)
 
+
+def _read_upload() -> str:
+    f = request.files.get("file")
+    if not f or not f.filename:
+        return ""
+    raw = f.read()
+    for enc in ("utf-8-sig", "cp1252", "latin-1"):
+        try:
+            return raw.decode(enc)
+        except UnicodeDecodeError:
+            continue
+    return ""
+
+
 @bp.route("/", methods=["GET"])
 def index():
-    return render_template("index.html")
+    return render_template("index.html", currencies=logic.CURRENCIES)
+
 
 @bp.route("/analyze", methods=["POST"])
 def analyze():
-    cost_data_input = request.form.get("cost_data", "").strip()
-    
+    currency = request.form.get("currency", "USD")
+    if currency not in logic.CURRENCIES:
+        currency = "USD"
     if request.form.get("sample_data"):
-        cost_data_input = logic.get_sample_data()
-
-    if not cost_data_input:
-        flash("Lütfen analiz etmek için maliyet verisi girin veya örnek veriyle deneyin.", "error")
-        return redirect(url_for("feature.index"))
-
+        text = logic.sample_csv()
+    else:
+        text = _read_upload() or request.form.get("cost_data", "")
     try:
-        df = logic.parse_cost_data(cost_data_input)
-        analysis_results = logic.analyze_costs(df)
-        plot_url = logic.generate_cost_plot(df)
-        
-        return render_template("results.html", 
-                               total_cost=f"{analysis_results['total_cost']:.2f}",
-                               cost_by_service=analysis_results['cost_by_service'],
-                               anomalies=analysis_results['anomalies'],
-                               suggestions=analysis_results['suggestions'],
-                               plot_url=plot_url)
-    except ValueError as e:
-        flash(f"Veri işleme hatası: {e}", "error")
+        rows, warnings = logic.parse_costs(text)
+    except logic.ParseError as e:
+        flash(str(e), "error")
         return redirect(url_for("feature.index"))
-    except Exception as e:
-        flash(f"Beklenmeyen bir hata oluştu: {e}", "error")
-        return redirect(url_for("feature.index"))
+    result = logic.analyze(rows)
+    return render_template("results.html", r=result, warnings=warnings, cur=logic.CURRENCIES[currency],
+                           sample=bool(request.form.get("sample_data")))

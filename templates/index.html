@@ -1,31 +1,49 @@
 {% extends "base.html" %}
 
-{% block title %}{{ app_title }} - Giriş{% endblock %}
+{% block title %}{{ app_title }} — find waste in your SaaS & API bills{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="card">
-        <h1>{{ app_title }}</h1>
-        <p class="muted">{{ tagline }}</p>
+<div class="card">
+  <h1>Find the waste in your SaaS &amp; API bills</h1>
+  <p class="muted">Paste or upload a cost export and get a breakdown by vendor, month-over-month growth, spikes,
+    possible double charges, fixed subscriptions and unit-price increases — in seconds.</p>
 
-        <p>Çeşitli SaaS ve API hizmetlerinizdeki harcamaları analiz etmek için maliyet verilerinizi aşağıdaki metin kutusuna yapıştırın. Verilerinizin CSV formatında ve 'Servis,Tarih,Kullanım,Maliyet' sütun başlıklarını içermesi gerekmektedir.</p>
+  <form method="post" action="{{ url_for('feature.analyze') }}" enctype="multipart/form-data">
+    <label for="file">Upload a CSV</label>
+    <input type="file" id="file" name="file" accept=".csv,.txt,text/csv">
 
-        <form method="POST" action="{{ url_for('feature.analyze') }}">
-            <div class="form-group">
-                <label for="cost_data">Maliyet Verilerini Yapıştırın (CSV formatında)</label>
-                <textarea id="cost_data" name="cost_data" rows="15" class="form-control" placeholder="Örnek:
-Servis,Tarih,Kullanım,Maliyet
-OpenAI,2023-10-01,150000,350.75
-Zapier,2023-10-05,5000,49.99
-Clerk,2023-10-10,1200,75.00
-Stripe,2023-10-12,10000,120.50
-..."></textarea>
-            </div>
-            <div class="form-group btn-group">
-                <button type="submit" class="btn">Analiz Et</button>
-                <button type="submit" name="sample_data" value="true" class="btn btn-secondary">Örnek Veriyle Dene</button>
-            </div>
-        </form>
+    <label for="cost_data">…or paste it here</label>
+    <textarea id="cost_data" name="cost_data" rows="10" placeholder="Service,Date,Usage,Cost
+OpenAI,2025-09-28,52000000,520.00
+AWS,2025-09-28,,640.95
+Slack,2025-09-03,24,210.00"></textarea>
+
+    <div class="grid" style="margin-top:8px">
+      <div>
+        <label for="currency">Currency</label>
+        <select id="currency" name="currency">
+          {% for code, sym in currencies.items() %}<option value="{{ code }}">{{ code }} ({{ sym }})</option>{% endfor %}
+        </select>
+      </div>
     </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+      <button type="submit">Analyze my costs</button>
+      <button type="submit" name="sample_data" value="1" class="btn-secondary" formnovalidate>Try with sample data</button>
+    </div>
+  </form>
+</div>
+
+<div class="grid" style="margin-top:16px">
+  <div class="card">
+    <h3>What it accepts</h3>
+    <p class="muted">Any CSV with a <b>service/vendor</b> and a <b>cost/amount</b> column. <b>Date</b> and
+      <b>usage/quantity</b> are optional but unlock trends and unit-price checks. Comma, semicolon or tab separated;
+      amounts like <code>$1,250.00</code> or <code>1.250,50</code> both work.</p>
+  </div>
+  <div class="card">
+    <h3>Private by design</h3>
+    <p class="muted">Your file is analyzed in memory and never stored. No account needed.</p>
+  </div>
 </div>
 {% endblock %}
