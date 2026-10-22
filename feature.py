@@ -1,3 +1,5 @@
+import logging
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 import logic
@@ -34,9 +36,13 @@ def analyze():
         text = _read_upload() or request.form.get("cost_data", "")
     try:
         rows, warnings = logic.parse_costs(text)
+        result = logic.analyze(rows)
     except logic.ParseError as e:
         flash(str(e), "error")
         return redirect(url_for("feature.index"))
-    result = logic.analyze(rows)
+    except Exception:  # son güvence: kullanıcı asla sunucu hatası sayfası görmesin
+        logging.getLogger(__name__).exception("analyze failed")
+        flash("Sorry, this file couldn't be analyzed. Please check that it is a CSV export and try again.", "error")
+        return redirect(url_for("feature.index"))
     return render_template("results.html", r=result, warnings=warnings, cur=logic.CURRENCIES[currency],
                            sample=bool(request.form.get("sample_data")))
